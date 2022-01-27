@@ -4,6 +4,7 @@ import (
 	"blog/dao/mysql"
 	"blog/dao/redis"
 	"blog/logger"
+	"blog/pkg/snowflake"
 	"blog/routers"
 	"blog/settings"
 	"context"
@@ -46,12 +47,17 @@ func main() {
 	}
 	defer redis.Close()
 
+	if err := snowflake.Init(settings.Conf.StartTime, settings.Conf.MachineId); err != nil {
+		fmt.Printf("init snowflake failed, err: %v\n", err)
+		return
+	}
+
 	// 5、注冊路由
 	r := routers.SetUp()
 
 	// 6、启动服务
 	srv := &http.Server{
-		Addr: fmt.Sprintf(":%d", viper.GetInt("app.port")),
+		Addr:    fmt.Sprintf(":%d", viper.GetInt("app.port")),
 		Handler: r,
 	}
 
