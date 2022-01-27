@@ -1,6 +1,7 @@
 package routers
 
 import (
+	"blog/controller"
 	"blog/logger"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -9,6 +10,8 @@ import (
 func SetUp() *gin.Engine {
 	r := gin.New()
 	r.Use(logger.GinLogger(), logger.GinRecovery(true))
+
+	r.GET("/signup", controller.SignUpHandler)
 
 	r.GET("/", func(c *gin.Context) {
 		c.String(http.StatusOK, "hello gin")
