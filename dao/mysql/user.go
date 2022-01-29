@@ -2,7 +2,8 @@ package mysql
 
 import "fmt"
 
-func QueryUserIsExist(username string) {
+// QueryUserByUsername 根据username查询用户是否存在
+func QueryUserByUsername(username string) {
 	sqlStr := fmt.Sprintf("select * from user where username=%s", username)
 	db.QueryRow(sqlStr)
 }

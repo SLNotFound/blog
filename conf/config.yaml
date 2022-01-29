@@ -3,7 +3,7 @@ app:
   mode: "dev"
   port: 9999
   version: "1.0"
-  start_time: "2020-07-01"
+  startTime: "2020-07-01"
   machineId: 1
 
 log:

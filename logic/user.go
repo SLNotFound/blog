@@ -2,11 +2,14 @@ package logic
 
 import (
 	"blog/dao/mysql"
-	"fmt"
+	"blog/pkg/snowflake"
 )
 
 func SignUp() {
-	mysql.QueryUserIsExist("")
+	// 判断用户是否存在，查询语句
+	mysql.QueryUserByUsername("")
 
-	fmt.Println("hello")
+	// 生成UID
+	snowflake.GenID()
+
 }
