@@ -1,6 +1,7 @@
 package main
 
 import (
+	"blog/controller"
 	"blog/dao/mysql"
 	"blog/dao/redis"
 	"blog/logger"
@@ -49,6 +50,11 @@ func main() {
 
 	if err := snowflake.Init(settings.Conf.StartTime, settings.Conf.MachineId); err != nil {
 		fmt.Printf("init snowflake failed, err: %v\n", err)
+		return
+	}
+
+	if err := controller.InitTranslator("zh"); err != nil {
+		fmt.Printf("init translator failed, err: %v\n", err)
 		return
 	}
 
