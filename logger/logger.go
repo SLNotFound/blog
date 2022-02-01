@@ -16,13 +16,13 @@ import (
 	"time"
 )
 
-func InitLogConfig(cfg *settings.LogConfig) (err error) {
+func InitLogConfig(cfg *settings.LogConfig, mode string) (err error) {
 	writerSyncer := getLogWriter(
 		cfg.Filename,
 		cfg.MaxAge,
 		cfg.MaxSize,
 		cfg.MaxBackups,
-		)
+	)
 	encoder := getEncoder()
 
 	var l = new(zapcore.Level)
@@ -30,7 +30,17 @@ func InitLogConfig(cfg *settings.LogConfig) (err error) {
 	if err != nil {
 		return
 	}
-	core := zapcore.NewCore(encoder, writerSyncer, l)
+	var core zapcore.Core
+	if mode == "dev" {
+		// 进入开发模式，日志输出到终端
+		consoleEncoder := zapcore.NewConsoleEncoder(zap.NewDevelopmentEncoderConfig())
+		core = zapcore.NewTee(
+			zapcore.NewCore(encoder, writerSyncer, l),
+			zapcore.NewCore(consoleEncoder, zapcore.Lock(os.Stdout), zapcore.DebugLevel),
+		)
+	} else {
+		core = zapcore.NewCore(encoder, writerSyncer, l)
+	}
 
 	lg := zap.New(core, zap.AddCaller())
 	zap.ReplaceGlobals(lg)
@@ -49,10 +59,10 @@ func getEncoder() zapcore.Encoder {
 
 func getLogWriter(filename string, maxSize, maxBackup, maxAge int) zapcore.WriteSyncer {
 	lumberjackLogger := &lumberjack.Logger{
-		Filename: filename,
-		MaxSize: maxSize,
+		Filename:   filename,
+		MaxSize:    maxSize,
 		MaxBackups: maxBackup,
-		MaxAge: maxAge,
+		MaxAge:     maxAge,
 	}
 
 	return zapcore.AddSync(lumberjackLogger)
@@ -75,18 +85,18 @@ func GinLogger() gin.HandlerFunc {
 			zap.String("user-agent", c.Request.UserAgent()),
 			zap.String("errors", c.Errors.ByType(gin.ErrorTypePrivate).String()),
 			zap.Duration("cost", cost),
-			)
+		)
 	}
 }
 
 func GinRecovery(stack bool) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		defer func() {
-			if err := recover(); err!= nil {
+			if err := recover(); err != nil {
 				var brokenPipe bool
 				if ne, ok := err.(*net.OpError); ok {
-					if se, ok := ne.Err.(*os.SyscallError);ok {
-						if strings.Contains(strings.ToLower(se.Error()), "broken pipe") || strings.Contains(strings.ToLower(se.Error()), "connection reset by peer"){
+					if se, ok := ne.Err.(*os.SyscallError); ok {
+						if strings.Contains(strings.ToLower(se.Error()), "broken pipe") || strings.Contains(strings.ToLower(se.Error()), "connection reset by peer") {
 							brokenPipe = true
 						}
 					}
@@ -105,12 +115,12 @@ func GinRecovery(stack bool) gin.HandlerFunc {
 				if stack {
 					zap.L().Error("[Recovery from panic]",
 						zap.Any("error", err),
-						zap.String("request",string(httpRequest)),
+						zap.String("request", string(httpRequest)),
 						zap.String("stack", string(debug.Stack())))
 				} else {
 					zap.L().Error("[Recovery from panic]",
 						zap.Any("error", err),
-						zap.String("request",string(httpRequest)))
+						zap.String("request", string(httpRequest)))
 				}
 				c.AbortWithStatus(http.StatusInternalServerError)
 			}

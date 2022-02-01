@@ -27,7 +27,7 @@ func main() {
 	}
 
 	// 2、初始化日志
-	if err := logger.InitLogConfig(settings.Conf.LogConfig); err != nil {
+	if err := logger.InitLogConfig(settings.Conf.LogConfig, settings.Conf.Mode); err != nil {
 		fmt.Printf("init logConfig failed, err: %v\n", err)
 		return
 	}
@@ -59,7 +59,7 @@ func main() {
 	}
 
 	// 5、注冊路由
-	r := routers.SetUp()
+	r := routers.SetUp(settings.Conf.Mode)
 
 	// 6、启动服务
 	srv := &http.Server{
