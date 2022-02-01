@@ -11,15 +11,20 @@ func SignUp(p *models.SignUpParam) (err error) {
 	if err := mysql.CheckUserExist(p.Username); err != nil {
 		return err
 	}
-
 	// 生成UID
 	userID := snowflake.GenID()
-
 	user := &models.User{
 		UserID:   userID,
 		Username: p.Username,
 		Password: p.Password,
 	}
-
 	return mysql.InsertUser(user)
+}
+
+func Login(p *models.LoginParam) error {
+	user := &models.User{
+		Username: p.Username,
+		Password: p.Password,
+	}
+	return mysql.Login(user)
 }
