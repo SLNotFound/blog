@@ -3,8 +3,10 @@ package routers
 import (
 	"blog/controller"
 	"blog/logger"
-	"github.com/gin-gonic/gin"
+	"blog/middlewares"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
 )
 
 func SetUp(mode string) *gin.Engine {
@@ -17,7 +19,8 @@ func SetUp(mode string) *gin.Engine {
 	r.POST("/signup", controller.SignUpHandler)
 	r.POST("/login", controller.LoginHandler)
 
-	r.GET("/", func(c *gin.Context) {
+	r.GET("/hello", middlewares.JWTAuthMiddleware(), func(c *gin.Context) {
+		// 如果是登录用户，判断请求头中是否有 有效的JWT
 		c.String(http.StatusOK, "hello gin")
 	})
 	return r
